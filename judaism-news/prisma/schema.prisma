@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model Source {
+  id        String    @id @default(uuid())
+  name      String
+  url       String
+  logoUrl   String
+  feedUrl   String?
+  type      String    @default("RSS") // RSS, HTML
+  selector  String?   // JSON string for HTML selectors if needed
+  articles  Article[]
+}
+
+model Article {
+  id          String   @id @default(uuid())
+  title       String
+  url         String   @unique
+  imageUrl    String?
+  summary     String?
+  content     String?
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+  
+  sourceId    String?
+  source      Source?  @relation(fields: [sourceId], references: [id])
+  
+  isInternal  Boolean  @default(false)
+  views       Int      @default(0)
+
+  @@index([publishedAt])
+}
