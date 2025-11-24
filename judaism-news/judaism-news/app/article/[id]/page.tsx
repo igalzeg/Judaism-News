@@ -17,8 +17,24 @@ export default async function ArticlePage({ params }: { params: { id: string } }
     // Fetch related articles (3 external, 1 internal)
     const externalRelated = await prisma.article.findMany({
         where: { isInternal: false, id: { not: article.id } },
-        return(
-        <div className = "max-w-4xl mx-auto px-4 py-8" >
+        orderBy: { publishedAt: 'desc' },
+        take: 3,
+        include: { source: true }
+    });
+
+    const internalRelated = await prisma.article.findFirst({
+        where: { isInternal: true, id: { not: article.id } },
+        orderBy: { publishedAt: 'desc' },
+        include: { source: true }
+    });
+
+    const relatedArticles = [...externalRelated];
+    if (internalRelated) {
+        relatedArticles.push(internalRelated);
+    }
+
+    return (
+        <div className="max-w-4xl mx-auto px-4 py-8">
             <article className="bg-white rounded-xl shadow-sm overflow-hidden mb-12">
                 {article.imageUrl && (
                     <div className="h-96 w-full relative">
@@ -52,6 +68,6 @@ export default async function ArticlePage({ params }: { params: { id: string } }
                     ))}
                 </div>
             </section>
-        </div >
+        </div>
     );
 }
