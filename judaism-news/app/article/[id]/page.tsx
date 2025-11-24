@@ -25,9 +25,11 @@ export default async function ArticlePage({ params }: { params: { id: string } }
     const internalRelated = await prisma.article.findFirst({
         where: { isInternal: true, id: { not: article.id } },
         orderBy: { publishedAt: 'desc' },
+        include: { source: true }
     });
 
-    const relatedArticles = [...externalRelated];
+    // Explicitly cast to any[] to bypass strict type checking for mixed content
+    const relatedArticles: any[] = [...externalRelated];
     if (internalRelated) {
         relatedArticles.push(internalRelated);
     }
